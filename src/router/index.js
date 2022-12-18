@@ -4,6 +4,8 @@ import HomeView from '../views/HomeView.vue'
 import CartView from '../views/CartView.vue'
 import GoodsView from '../views/GoodsView.vue'
 import OrdersView from '../views/OrdersView.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
 
 Vue.use(VueRouter)
 
@@ -27,6 +29,16 @@ const routes = [
     path: '/orders',
     name: 'orders',
     component: OrdersView
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView
   },
 ]
 

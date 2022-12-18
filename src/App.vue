@@ -23,20 +23,26 @@
         </div>
         <div>
             <div class="container-md text-right">
-                <small style="color: rgb(136, 136, 136);">
+                <small style="color: rgb(136, 136, 136);" v-if="user.login">
                     Здравствуйте, <a href="javascript://" style="cursor: pointer;">
                         <i aria-hidden="true" class="fa fa-user"></i>
-                        Марков Роман
+                        {{user.login}}
                     </a>
                     <span> | </span>
-                    <a href="javascript://" style="cursor: pointer;">
-                        <i aria-hidden="true" class="fa fa-users"></i> 
-                        пользователи
-                    </a>
-                    <span> | </span>
-                    <a href="javascript://" style="cursor: pointer;">
+                    <a href="javascript://" @click="logOut" style="cursor: pointer;">
                         <i aria-hidden="true" class="fa fa-sign-out"></i>
                             выйти
+                    </a>
+                </small>
+                <small style="color: rgb(136, 136, 136);" v-else>
+                    <a href="javascript://" @click="$router.push('login').catch(()=>{})" style="cursor: pointer;">
+                        <i aria-hidden="true" class="fa fa-sign-out"></i>
+                            Войти
+                    </a>
+                    <span> | </span>
+                    <a href="javascript://" @click="$router.push('register').catch(()=>{})" style="cursor: pointer;">
+                        <i aria-hidden="true" class="fa fa-sign-out"></i>
+                            зарегистрироваться
                     </a>
                 </small>
             </div>
@@ -44,13 +50,16 @@
         <div class="goods container-md">
           <router-view 
             @good-click="goodToCart" 
-            @del-from-cart="delFromCart" 
+            @del-from-cart="delFromCart"
+            @logged-in="saveUserData"
             :goods="goods" 
             :cart="cart" 
             :count="cartCount" 
+            :user-login="user.login"
+            :user-token="user.token"
           />
         </div>
-        <button @click="$router.push('cart')" type="button" class="btn btn-success btn-lg btn-bottom-left" style="z-index: 100;">
+        <button @click="$router.push('cart').catch(()=>{})" type="button" class="btn btn-success btn-lg btn-bottom-left" style="z-index: 100;">
           <i aria-hidden="true" class="fa fa-shopping-cart"></i> {{ cartCount }}
         </button>
 		<br><br><br><br><br><br>
@@ -88,38 +97,64 @@
 export default {
   computed: {
     cartCount() {
-      return this.cart.length
+      if(!this.loading)
+        localStorage.cart = JSON.stringify(this.cart)
+      var count = 0
+      this.cart.forEach(item => {
+        count += item.count
+      })
+      return count
     }
   },
   data() {
     return {
       cart: [],
-      goods: [
-        {
-          id: 1,
-          title: "Товар 1",
-          description: "Описание товара 1",
-          price: "6000",
-          pic: "img/pic.jpg",
-        },
-        {
-          id: 2,
-          title: "Товар 2",
-          description: "Описание товара 2",
-          price: "6502",
-          pic: "img/pic.jpg",
-        }
-      ]
+      goods: [],
+      loading: true,
+      user: {
+        login: '',
+        token: '',
+      }
     }
   },
   methods: {
+    saveUserData(data) {
+      this.user.login = data.login
+      this.user.token = data.token
+    },
+    logOut() {
+      this.user.login = ''
+      this.user.token = ''
+      this.$router.push('goods').catch(()=>{})
+    },
     goodToCart(good){
-      this.cart.push(good)
+      var currentGood = this.cart.find(item => (item.id == good.id))
+      if (currentGood) currentGood.count++
+      else {
+        good.count = 1
+        this.cart.push(good)
+      }
     },
     delFromCart(id){
       if(id == -1) this.cart = []
       else this.cart.splice(id, 1)
+    },
+    getGoods() {
+      this.axios.get('http://195.161.62.172:7777/markov.rv/api/products.php')
+        .then(resp => {
+          resp.data.forEach(item => {
+            item.count = 1
+          })
+          this.goods = resp.data
+          if (localStorage.cart != undefined)
+            this.cart = JSON.parse(localStorage.cart)
+          this.loading = false
+        })
     }
+  },
+  created() {
+    this.getGoods()
+    // this.axios.get('data.json').then(console.log)
   }
 }
 </script>

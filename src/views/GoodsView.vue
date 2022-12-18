@@ -4,7 +4,7 @@
     <div class="row">
       <div v-for="good in goods" :key="good.id" class="col-md-6 col-lg-4">
           <div class="card">
-              <img :src="good.pic" :alt="good.title" class="card-img-top">
+              <img :src="good.image" :alt="good.title" class="card-img-top">
               <div class="card-body">
                   <h5 class="card-title">{{good.title}}</h5>
                   <p class="card-text">{{good.description}}</p>
